@@ -1,6 +1,3 @@
-  # RoTAS
-A simple Roblox TASing software using AutoHotKey.
-
 # RoTAS (AHK v1.1+)
 # By Thewolfleader500
 
@@ -86,7 +83,7 @@ I'd ask that you credit me, but I don't have the time nor willpower to stop you 
 Please credit me, if you could so kindly, when using this for public works.
 
 - Thewolfleader500
-Originally designed for FE2CM
+- Originally designed for FE2CM
 
 ---
 
