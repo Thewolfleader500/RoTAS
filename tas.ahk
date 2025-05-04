@@ -63,7 +63,6 @@ isPlaying := false
 ; Hotkeys
 ; -------------------------
 
-; F1: Start/stop recording (chains after any playbackBuffer)
 F1::
     if (recording) {
         ; stop
@@ -75,9 +74,8 @@ F1::
         return
     }
     ; start
-    ; prepend any playbackBuffer into events
-    for i, ev in playbackBuffer
-        events.Push(ev)
+    events := []          ; Clear previous events
+    playbackBuffer := []  ; Clear any old playback buffer
     prevState := {}
     startTime := A_TickCount
     md.Start()
@@ -86,22 +84,22 @@ F1::
     ToolTip, Recording TAS -- F1 to stop
 return
 
-; F2: Playback (customCode if set, else events[])
+
 F2::
-    if (customCode != "") {
-        MsgBox, Running custom AHK script in 2s…
-        Sleep, 2000
-        ToolTip
-        ExecScript(customCode)
-        return
-    }
     if (!events.Length()) {
         MsgBox, No recording to play!
         return
     }
+
     MsgBox, Playback in 2 Seconds -- Focus Roblox.
     Sleep, 2000
     ToolTip
+
+    ; Optionally run custom code *in parallel*
+    if (customCode != "") {
+        ExecScript(customCode) ; runs it in a temporary script, not blocking
+    }
+
     playbackBuffer := []
     lastT := 0
     SendMode Play
@@ -140,15 +138,30 @@ F2::
 return
 
 
-; F3: Export `events[]` as a valid AHK script to tas_output.ahk
+
 F3::
+{
+    outputFile := A_ScriptDir "\tas_output.ahk"
+
+    ; Try to delete first, just in case
+    if FileExist(outputFile)
+        FileDelete, %outputFile%
+
     if (!events.Length()) {
         MsgBox, Nothing to export!
         return
     }
-    FileDelete, %A_ScriptDir%\tas_output.ahk
-    ; header
-    FileAppend, ; Auto-generated TAS playback`n#NoEnv`nSendMode Input`nSetWorkingDir %A_ScriptDir%`nSleep, 1000`n`n, %A_ScriptDir%\tas_output.ahk
+
+    ; Create new file with a clean header
+    FileAppend,
+    (
+; Auto-generated TAS playback
+#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%
+Sleep, 1000
+
+    ), %outputFile%
 
     lastT := 0
     Loop % events.Length() {
@@ -157,33 +170,35 @@ F3::
         dT   := t - lastT
         lastT := t
 
-        ; build the two lines as one string
         if (ev["type"] = "move") {
             dx := ev["dx"]
             dy := ev["dy"]
             s  := "Sleep " dT "`n"
-            .  "DllCall(""mouse_event"",""UInt"",0x0001|0x2000,""Int""," dx ",""Int""," dy ",""UInt"",0,""UPtr"",0)`n"
+              . "DllCall(""mouse_event"",""UInt"",0x0001|0x2000,""Int""," dx ",""Int""," dy ",""UInt"",0,""UPtr"",0)`n"
         } else {
             key := ev["key"]
             down := ev["down"]
             if (key = "LButton") {
                 flag := down ? "0x0002" : "0x0004"
+                s := "Sleep " dT "`n"
+                  . "DllCall(""mouse_event"",""UInt""," flag ",""UInt"",0,""UInt"",0,""UInt"",0,""UPtr"",0)`n"
             } else if (key = "RButton") {
                 flag := down ? "0x0008" : "0x0010"
-            }
-            if (key = "LButton" or key = "RButton") {
                 s := "Sleep " dT "`n"
-                . "DllCall(""mouse_event"",""UInt""," flag ",""UInt"",0,""UInt"",0,""UInt"",0,""UPtr"",0)`n"
+                  . "DllCall(""mouse_event"",""UInt""," flag ",""UInt"",0,""UInt"",0,""UInt"",0,""UPtr"",0)`n"
             } else {
                 action := down ? "Down" : "Up"
                 s := "Sleep " dT "`n"
-                . "SendInput {" key " " action "}`n"
+                  . "SendInput {" key " " action "}`n"
             }
         }
-        FileAppend, % s, %A_ScriptDir%\tas_output.ahk
+        FileAppend, % s, %outputFile%
     }
-    MsgBox, Exported to tas_output.ahk!
+
+    MsgBox, Exported to tas_output.ahk (previous contents wiped).
+}
 return
+
 
 ; -------------------------
 ; F4: Show multiline GUI for custom AHK code
@@ -257,11 +272,12 @@ return
 ; -------------------------
 OnRawMouse(device, dx, dy) {
     global recording, events, startTime
-    if (!recording)
+    if (!recording || (dx = 0 && dy = 0))
         return
     t := A_TickCount - startTime
     events.Push({ time:t, type:"move", dx:dx, dy:dy })
 }
+
 
 ; -------------------------
 ; Key Polling Timer
@@ -282,9 +298,20 @@ return
 ; -------------------------
 ; ExecScript: run raw AHK code
 ; -------------------------
+isCustomRunning := false
+
 ExecScript(code) {
+    global isCustomRunning
+    if (isCustomRunning)
+        return
+    isCustomRunning := true
     tmp := A_ScriptDir "\_temp_exec.ahk"
     FileDelete, %tmp%
     FileAppend, %code%, %tmp%
-    RunWait, %A_AhkPath% "%tmp%", , Hide
+    Run, %A_AhkPath% "%tmp%", , Hide
+    SetTimer, ResetCustomRunning, -5000 ; assume it'll finish in 5s or less
 }
+
+ResetCustomRunning:
+    isCustomRunning := false
+return
