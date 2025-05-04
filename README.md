@@ -37,7 +37,7 @@ Records raw mouse + keyboard input, supports chaining recordings/playback, expor
 1. **Record**  
    - Press **F1** → perform inputs in Roblox → press **F1** to stop.  
 2. **Chain** (optional)  
-   - Press **F2** to play back your last recording, then press **F1** during playback to append more inputs.  
+   - Press **F2** to play back your last recording.
 3. **Export**  
    - Press **F3** → generates `tas_output.ahk` (ready to run as a standalone script).  
 4. **Custom Playback** (optional)  
