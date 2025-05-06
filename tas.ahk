@@ -86,10 +86,10 @@ return
 
 
 F2::
-    if (!events.Length()) {
-        MsgBox, No recording to play!
-        return
-    }
+   if (!events.Length() && customCode = "") {
+       MsgBox, No recording or custom code to play!
+       return
+   }
 
     MsgBox, Playback in 2 Seconds -- Focus Roblox.
     Sleep, 2000
@@ -309,8 +309,8 @@ ExecScript(code) {
     tmp := A_ScriptDir "\_temp_exec.ahk"
     FileDelete, %tmp%
     FileAppend, %code%, %tmp%
-    Run, %A_AhkPath% "%tmp%", , Hide
-    SetTimer, ResetCustomRunning, -5000 ; assume it'll finish in 5s or less
+    RunWait, %A_AhkPath% "%tmp%", , Hide
+    isCustomRunning := false
 }
 
 ResetCustomRunning:
