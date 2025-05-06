@@ -211,6 +211,7 @@ F4::
     Gui, Add, Edit, vCustomCodeEdit w580 h200 +WantReturn +VScroll, % customCode
     Gui, Add, Button, gSaveCode Default x350 y220 w100 h30, Save
     Gui, Add, Button, gCancelCode   x460 y220 w100 h30, Cancel
+    events := [] ;
     Gui, Show, AutoSize Center
 return
 
