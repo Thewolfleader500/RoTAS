@@ -6,6 +6,12 @@ Records raw mouse + keyboard input, supports chaining recordings/playback, expor
 
 ---
 
+## Devlog
+   - Most Recent Patch: v0.2.2
+   - Far as I'm aware, ROBLOX's physics system is plagued with RNG and inconsistency.
+   - Plan going forward is to add a function to screen record the past whatever seconds of gameplay and change inputs based on frame advance, similar to how a lot of TASes use slowdown and input editors. Thing being, you can't actually *slow down* ROBLOX without just exploiting, so you'll neeed to use a previous recording.
+   - I'll probably also add a menu to view a catalog of saved TASes.
+
 ## Installation
 
 1. **Requirements**  
