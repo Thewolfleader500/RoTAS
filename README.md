@@ -7,7 +7,7 @@ Records raw mouse + keyboard input, supports chaining recordings/playback, expor
 ---
 
 ## Devlog
-   - !! CURRENTLY NON-FUNCTIONAL !!
+   - !! CURRENTLY BROKEN IN SOME INSTANCES !!
    - Sleep timings need to be refined. Code makes a lot of assumptions.
 
    - Most Recent Patch: v0.2.2
